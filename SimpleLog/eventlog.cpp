@@ -1,6 +1,6 @@
 #include "eventlog.h"
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <Shlwapi.h>
 
 
@@ -8,7 +8,7 @@
  
 std::map<TSTRING, EventLog*> EventLog::OpenLogs;
 
-std::auto_ptr<EventLog>
+std::auto_ptr<LogHandle>
 EventLog::InitialiseLog(
 	const TSTRING filename,
 	const TSTRING path,
@@ -27,7 +27,7 @@ EventLog::InitialiseLog(
 		OpenLogs[sanitised] = new EventLog( sanitised, path, level, wait );
 	}
 
-	return std::auto_ptr<EventLog>( OpenLogs[sanitised] );
+	return std::auto_ptr<LogHandle>( new LogHandle( OpenLogs[sanitised] ) );
 }
 
 
@@ -342,8 +342,14 @@ EventLog::CloseLog( const TSTRING filename, const bool force )
 		if( OpenLogs.count( sanitised ) )
 		{
 			sit = OpenLogs.find( sanitised );
+
 			sit->second->references -= 1;
-			if ( sit->second->references == 0 || force )
+			if ( force )
+			{
+				sit->second->references = 0;
+			}
+
+			if ( sit->second->references <= 0 )
 			{
 				delete sit->second;
 				OpenLogs.erase( sit );
@@ -388,14 +394,17 @@ EventLog::~EventLog()
 {
 	FlushQueue();
 
-	if( hFlushTimer != nullptr )
+	if( hFlushTimer )
 	{
 		DeleteTimerQueueTimer( NULL, hFlushTimer, NULL );
-		hFlushTimer = nullptr;
+	}
+
+	if ( requestedFlush )
+	{
 		CloseHandle( requestedFlush );
 	}
 
-	if(hFile != nullptr)
+	if( hFile )
 	{
 		CloseHandle( hFile );
 	}
