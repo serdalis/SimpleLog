@@ -62,7 +62,6 @@ protected:
 
 	int references; /**< number of times this class is referenced currently */
 
-	bool timerStarted;     /**< records if the auto flush timer has been started */
 	HANDLE requestedFlush; /**< event to record if a flush has been requested */
 	int flushWait;         /**< time to wait between flushes */
 
@@ -155,7 +154,7 @@ public:
 	 * @param wait time to wait between flushes.
 	 * @param maxqueue max size of the message backlog.
 	 */
-	static EventLog* InitialiseLog(
+	static std::auto_ptr<EventLog> InitialiseLog(
 		const TSTRING filename = TEXT("EventLog"),
 		const TSTRING path = TEXT("Log"),
 		const EventLevel level = EL_WARN,

@@ -1,13 +1,14 @@
 #include "eventlog.h"
 
-#include <Shlwapi.h>
 #include <stdarg.h>
+#include <Shlwapi.h>
+
 
 #pragma comment( lib, "Shlwapi.lib" )
-
+ 
 std::map<TSTRING, EventLog*> EventLog::OpenLogs;
 
-EventLog*
+std::auto_ptr<EventLog>
 EventLog::InitialiseLog(
 	const TSTRING filename,
 	const TSTRING path,
@@ -16,6 +17,7 @@ EventLog::InitialiseLog(
 	const int maxqueue )
 {
 	TSTRING sanitised = SanitiseFileName( filename );
+
 	if( OpenLogs.count( sanitised ) )
 	{
 		OpenLogs[sanitised]->references += 1;
@@ -24,7 +26,8 @@ EventLog::InitialiseLog(
 	{
 		OpenLogs[sanitised] = new EventLog( sanitised, path, level, wait );
 	}
-	return OpenLogs[sanitised];
+
+	return std::auto_ptr<EventLog>( OpenLogs[sanitised] );
 }
 
 
@@ -68,9 +71,9 @@ EventLog::Write(const EventLevel level, const TCHAR* const format, ...)
 	if(level <= eventLevel)
 	{
 		va_list args;
-		va_start(args, format);
-		vWriteLog(format, level, args);
-		va_end(args);
+		va_start( args, format );
+		vWriteLog( format, level, args );
+		va_end( args );
 	}
 }
 
@@ -78,12 +81,14 @@ EventLog::Write(const EventLevel level, const TCHAR* const format, ...)
 void CALLBACK
 EventLog::TimerFlush(void* params, BOOLEAN TimerOrWaitFired)
 {
-	EventLog* el = static_cast<EventLog*>(params);
-	el->timerStarted = false;
+	EventLog* el = static_cast<EventLog*>( params );
+	
 	el->FlushQueue();
+
 	/* clear this after so we don't requeue between the mutex */
-	ResetEvent(el->requestedFlush);
+	ResetEvent( el->requestedFlush );
 }
+
 
 EventLog::EventLog(
 	const TSTRING filename,
@@ -92,18 +97,18 @@ EventLog::EventLog(
 	const int wait,
 	const int maxqueue )
 {
-	TCHAR exeLocation[ MAX_PATH ];
+	TCHAR exeLocation[MAX_PATH];
 
 	references = 1;
 
 	queueSize = 0;
 	SetMaxQueue( maxqueue );
 
-	InitializeCriticalSection(&queueLock);
-	InitializeCriticalSection(&fileLock);
+	InitializeCriticalSection( &queueLock );
+	InitializeCriticalSection( &fileLock );
 
 	hFile = nullptr;
-	SetEventLevel(level);
+	SetEventLevel( level );
 
 	filePath = path;
 	if(filePath.compare( TEXT("Log") ) == 0)
@@ -114,18 +119,17 @@ EventLog::EventLog(
 							TEXT("InitialiseLog"),
 							&hm);
 
-		GetModuleFileName(hm, exeLocation, MAX_PATH);
-		TCHAR* PathEnd = PathFindFileName(exeLocation);
+		GetModuleFileName( hm, exeLocation, MAX_PATH );
+		TCHAR* PathEnd = PathFindFileName( exeLocation );
 		*PathEnd = '\0';
 
 		filePath = TSTRING( exeLocation );
 		filePath.append( TEXT("Log\\") );
 	}
 	fileName = filename;
-	CreateDirectory(filePath.c_str(), NULL);
+	CreateDirectory( filePath.c_str(), NULL );
 
-	timerStarted = false;
-	requestedFlush = CreateEvent(NULL, TRUE, FALSE, NULL);
+	requestedFlush = CreateEvent( NULL, TRUE, FALSE, NULL );
 
 	ReopenFile();
 
@@ -263,6 +267,7 @@ EventLog::vWriteLog( const TCHAR* const format, const EventLevel level, va_list 
 
 	TSTRING messageLine( header );
 	messageLine += format;
+
 	if ( messageLine.back() != '\n' )
 	{
 		messageLine += '\n';
@@ -277,17 +282,22 @@ EventLog::vWriteLog( const TCHAR* const format, const EventLevel level, va_list 
 	Buffer.push( TSTRING( &buf[0] ) );
 
 	bool request_state = ( WaitForSingleObject( requestedFlush, 0 ) == WAIT_OBJECT_0 );
-	if ( hFlushTimer && !request_state && Buffer.size() >= maxQueue )
+
+	if ( hFlushTimer && !request_state )
 	{
+		/* instantly flush the log queue if it has reached its maximum value */
+		if ( Buffer.size() >= maxQueue )
+		{
+			ChangeTimerQueueTimer( NULL, hFlushTimer, 0, flushWait );
+		}
+		/* start the timer to flush the queue after flushWait has been reached */
+		else
+		{
+			ChangeTimerQueueTimer( NULL, hFlushTimer, flushWait, flushWait );
+		}
 		SetEvent( requestedFlush );
-		ChangeTimerQueueTimer( NULL, hFlushTimer, 0, flushWait );
 	}
-	else if ( hFlushTimer && !request_state && !timerStarted )
-	{
-		timerStarted = true;
-		SetEvent( requestedFlush );
-		ChangeTimerQueueTimer( NULL, hFlushTimer, flushWait, flushWait );
-	}
+
 	LeaveCriticalSection( &queueLock );
 }
 
@@ -298,18 +308,18 @@ EventLog::FlushQueue()
 	DWORD written;
 	if( hFile && hFile != INVALID_HANDLE_VALUE )
 	{
-		EnterCriticalSection(&fileLock);
+		EnterCriticalSection( &fileLock );
 		CheckNewDay();
 		
-		EnterCriticalSection(&queueLock);
+		EnterCriticalSection( &queueLock );
 		while( !Buffer.empty() )
 		{
 			TSTRING& str = Buffer.front();
-			WriteFile(hFile, str.c_str(), str.size() * sizeof(TCHAR), &written, NULL);
+			WriteFile( hFile, str.c_str(), str.size() * sizeof(TCHAR), &written, NULL );
 			Buffer.pop();
 		}
-		LeaveCriticalSection(&queueLock);
-		LeaveCriticalSection(&fileLock);
+		LeaveCriticalSection( &queueLock );
+		LeaveCriticalSection( &fileLock );
 	}
 }
 
@@ -317,7 +327,7 @@ EventLog::FlushQueue()
 void
 EventLog::CloseLog( EventLog* eventLog, const bool force )
 {
-	CloseLog(eventLog->fileName, force);
+	CloseLog( eventLog->fileName, force );
 }
 
 
@@ -325,7 +335,7 @@ void
 EventLog::CloseLog( const TSTRING filename, const bool force )
 {
 	TSTRING sanitised = SanitiseFileName( filename );
-	std::map<TSTRING, EventLog*>::iterator sit;
+	std::map< TSTRING, EventLog* >::iterator sit;
 
 	if ( OpenLogs.size() > 0 )
 	{
@@ -359,10 +369,11 @@ EventLog::CloseAll( const bool force )
 {
 	TSTRING::size_type i = 0;
 	std::vector<TSTRING> filenames;
+
 	std::map<TSTRING, EventLog*>::iterator sit;
 	for ( sit = OpenLogs.begin(); sit != OpenLogs.end(); ++sit )
 	{
-		filenames.push_back(sit->second->fileName);
+		filenames.push_back( sit->second->fileName );
 	}
 
 	/* we need to do this because CloseLog will invalidate sit when called */
@@ -377,18 +388,18 @@ EventLog::~EventLog()
 {
 	FlushQueue();
 
-	if(hFlushTimer != nullptr)
+	if( hFlushTimer != nullptr )
 	{
-		DeleteTimerQueueTimer(NULL, hFlushTimer, NULL);
+		DeleteTimerQueueTimer( NULL, hFlushTimer, NULL );
 		hFlushTimer = nullptr;
-		CloseHandle(requestedFlush);
+		CloseHandle( requestedFlush );
 	}
 
 	if(hFile != nullptr)
 	{
-		CloseHandle(hFile);
+		CloseHandle( hFile );
 	}
 
-	DeleteCriticalSection(&queueLock);
-	DeleteCriticalSection(&fileLock);
+	DeleteCriticalSection( &queueLock );
+	DeleteCriticalSection( &fileLock );
 }
