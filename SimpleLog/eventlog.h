@@ -1,6 +1,6 @@
 
-#ifndef _EVENTLOG_H_
-#define _EVENTLOG_H_
+#ifndef _EVENTLOG_INCLUDED_H_
+#define _EVENTLOG_INCLUDED_H_
 
 /**
  * @author Ricky Neil
@@ -48,6 +48,7 @@ enum EventLevel
 	EL_CRITICAL = 1
 };
 
+class LogHandle; /**< Forward delceration just for the header file */
 
 /**
  * Multithread aware Event Reporting Class.
@@ -116,18 +117,6 @@ protected:
 	 * will reopen the file if we are
 	 */
 	void CheckNewDay();
-	
-	/**
-	 * Internal write function with va_args.
-	 * @param format message format.
-	 * @param level level of the event to be logged.
-	 * @param args va_args list of arguments to log.
-	 */
-	void vWriteLog(
-		const TCHAR* const format,
-		const EventLevel level,
-		va_list args
-	);
 
 	/**
 	 * parses the event level enum to human readable string.
@@ -154,7 +143,7 @@ public:
 	 * @param wait time to wait between flushes.
 	 * @param maxqueue max size of the message backlog.
 	 */
-	static std::auto_ptr<EventLog> InitialiseLog(
+	static std::auto_ptr<LogHandle> InitialiseLog(
 		const TSTRING filename = TEXT("EventLog"),
 		const TSTRING path = TEXT("Log"),
 		const EventLevel level = EL_WARN,
@@ -178,7 +167,7 @@ public:
 	 * @param eventLog pointer to the EventLog to close.
 	 * @param force force the log to close even if there are still references to it.
 	 */
-	static void CloseLog (EventLog* eventLog, const bool force = false );
+	static void CloseLog ( EventLog* eventLog, const bool force = false );
 
 	/**
 	 * Close a log file using a file name.
@@ -202,6 +191,19 @@ public:
 	void SetEventLevel( const EventLevel level );
 
 	/**
+	 * Internal write function with va_args.
+	 * @param format message format.
+	 * @param level level of the event to be logged.
+	 * @param args va_args list of arguments to log.
+	 */
+	void vWriteLog(
+		const TCHAR* const format,
+		const EventLevel level,
+		va_list args
+	);
+
+
+	/**
 	 * Add a log message to the queue to be written.
 	 * @param level level of the message to be written.
 	 * @param format message format.
@@ -218,6 +220,50 @@ public:
 	 * Virtual destructor for EventLog.
 	 */
 	virtual ~EventLog();
+};
+
+
+/**
+ * Purpose of this class is to provide allow event log to use an auto_ptr when being referenced.
+ * This class will encapsulate the event log object and get destroyed when the auto_ptr falls out of scope.
+ * Manually closing event logs should not be nessisary due to this.
+ */
+class LogHandle
+{
+	EventLog* eLog;
+
+public:
+	LogHandle( EventLog* eventLog )
+		: eLog( eventLog ) {};
+
+	void SetMaxQueue( const int maxqueue )
+	{
+		eLog->SetMaxQueue( maxqueue );
+	}
+
+	void SetEventLevel( const EventLevel level )
+	{
+		eLog->SetEventLevel( level );
+	}
+
+	void Write( const EventLevel level, const TCHAR* const format, ... )
+	{
+		va_list args;
+		va_start( args, format );
+		eLog->vWriteLog( format, level, args );
+		va_end( args );
+		
+	}
+
+	void FlushQueue()
+	{
+		eLog->FlushQueue();
+	}
+
+	~LogHandle()
+	{
+		EventLog::CloseLog( eLog );
+	}
 };
 
 #endif
