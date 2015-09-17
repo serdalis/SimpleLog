@@ -45,7 +45,7 @@ Write( const EventLevel level, const TCHAR* const format, ... )
 int
 main( int argc, char* argv[] )
 {
-
+	std::auto_ptr<LogHandle> logFile;
 	logFile = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
 
 	logFile->Write( EL_CRITICAL, TEXT("Lets log a Number! -- %d"), 42 );
