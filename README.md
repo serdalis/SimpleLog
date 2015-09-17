@@ -55,6 +55,52 @@ main( int argc, char* argv[] )
 }
 ```
 
+## Mutli-Threaded Example
+
+```C++
+#include "eventlog.h"
+
+#include <Windows.h>
+#include <process.h>
+
+#define MAX_THREADS 10
+
+unsigned __stdcall
+MultiTest( void* params )
+{
+	std::auto_ptr<LogHandle> logFile  = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+
+	int thread_num = *reinterpret_cast<int*>(params);
+
+	logFile->Write( EL_CRITICAL, TEXT("Multi Test Success %d."), thread_num );
+
+	return 0;
+}
+
+int
+main( int argc, char* argv[] )
+{
+	logFile = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+
+	int i = 0;
+
+	HANDLE threads[MAX_THREADS];
+	int thread_nums[MAX_THREADS];
+
+	for ( i = 0; i < MAX_THREADS; ++i )
+	{
+		thread_nums[i] = i;
+		threads[i] = reinterpret_cast<HANDLE>(
+					_beginthreadex(NULL, 0U, MultiTest, &thread_nums[i], 0U, NULL));
+	}
+
+	WaitForMultipleObjects( MAX_THREADS, threads, true, INFINITE );
+
+	logFile->Write( EL_CRITICAL, TEXT("Logging Test Success.") );
+
+	return 0;
+}
+```
 
 ## TODO
 Tests!
