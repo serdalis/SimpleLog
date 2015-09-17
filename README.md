@@ -80,7 +80,7 @@ MultiTest( void* params )
 int
 main( int argc, char* argv[] )
 {
-	logFile = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	std::auto_ptr<LogHandle> logFile = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
 
 	int i = 0;
 
