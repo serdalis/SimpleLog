@@ -19,16 +19,21 @@ store the result in an `auto_ptr<EventLog>` with the scope of your choosing.
 
 Write to the log exactly like `printf` except with a logging level at the front:
 
- - EL_DEBUG
- - EL_INFO
- - EL_WARN
- - EL_ERROR
- - EL_CRITICAL
+Avaliable levels are:
 
 ```C++
-void
-EventLog::Write( const EventLevel level, const TCHAR* const format, ... )
+enum EventLevel
+{
+	EL_DEBUG    = 5,
+	EL_INFO     = 4,
+	EL_WARN     = 3,
+	EL_ERROR    = 2,
+	EL_CRITICAL = 1
+}
 
+/* function call is: */
+Write( const EventLevel level, const TCHAR* const format, ... )
+```
 
 ## TODO
 Tests!
