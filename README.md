@@ -19,23 +19,7 @@ Store the result in an `auto_ptr<LogHandle>` with the scope of your choosing.
 When the auto_ptr goes out of scope the log file's internal reference count will decrease.
 If the internal reference count of the log file has reached 0 then the log will be flushed and closed.
 
-Write to the log exactly like `printf` except with a logging level at the front:
-
-Avaliable levels are:
-
-```C++
-enum EventLevel
-{
-	EL_DEBUG    = 5,
-	EL_INFO     = 4,
-	EL_WARN     = 3,
-	EL_ERROR    = 2,
-	EL_CRITICAL = 1
-}
-
-/* function call is: */
-Write( const EventLevel level, const TCHAR* const format, ... )
-```
+Write to the log exactly like `printf` except with a logging level at the front.
 
 ## Basic Example
 
@@ -45,11 +29,10 @@ Write( const EventLevel level, const TCHAR* const format, ... )
 int
 main( int argc, char* argv[] )
 {
-	std::auto_ptr<LogHandle> logFile;
-	logFile = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
-	logFile->Write( EL_CRITICAL, TEXT("Lets log a Number! -- %d"), 42 );
-	logFile->Write( EL_CRITICAL, TEXT("Logging Test Success.") );
+	LOG_CRIT( logFile, TEXT("Lets log a Number! -- %d"), 42 );
+	LOG_CRIT( logFile, TEXT("Logging Test Success.") );
 
 	return 0;
 }
@@ -68,11 +51,11 @@ main( int argc, char* argv[] )
 unsigned __stdcall
 MultiTest( void* params )
 {
-	std::auto_ptr<LogHandle> logFile  = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile  = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
 	int thread_num = *reinterpret_cast<int*>(params);
 
-	logFile->Write( EL_CRITICAL, TEXT("Multi Test Success %d."), thread_num );
+	LOG_CRIT( logFile, TEXT("Multi Test Success %d."), thread_num );
 
 	return 0;
 }
@@ -80,7 +63,7 @@ MultiTest( void* params )
 int
 main( int argc, char* argv[] )
 {
-	std::auto_ptr<LogHandle> logFile = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
 	int i = 0;
 
@@ -96,7 +79,7 @@ main( int argc, char* argv[] )
 
 	WaitForMultipleObjects( MAX_THREADS, threads, true, INFINITE );
 
-	logFile->Write( EL_CRITICAL, TEXT("Logging Test Success.") );
+	LOG_CRIT( logFile, TEXT("Logging Test Success.") );
 
 	return 0;
 }
