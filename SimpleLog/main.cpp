@@ -7,51 +7,51 @@
  * auto_ptr is used so that when this log file pointer
  * goes out of scope it auto calls the destructor and flushes.
  **/
-static std::auto_ptr<LogHandle> logFile;
+static LOGHANDLE logFile;
 
 void
 makeLog1()
 {
-	std::auto_ptr<LogHandle> logFile1 = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile1 = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
-	logFile->Write( EL_CRITICAL, TEXT("Single Test Success %d."), 1 );
+	LOG_CRIT( logFile, TEXT("Single Test Success %d."), 1 );
 }
 
 void
 makeLog2()
 {
-	std::auto_ptr<LogHandle> logFile2 = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile2 = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
-	logFile->Write( EL_CRITICAL, TEXT("Single Test Success %d."), 2 );
+	LOG_CRIT( logFile, TEXT("Single Test Success %d."), 2 );
 }
 
 void
 makeLog3()
 {
-	std::auto_ptr<LogHandle> logFile3 = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile3 = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
-	logFile->Write( EL_CRITICAL, TEXT("Single Test Success %d."), 3 );
+	LOG_CRIT( logFile, TEXT("Single Test Success %d."), 3 );
 }
 
 void
 makeLog4()
 {
-	std::auto_ptr<LogHandle> logFile4 = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile4 = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
-	logFile->Write( EL_CRITICAL, TEXT("Single Test Success %d."), 4 );
+	LOG_CRIT( logFile, TEXT("Single Test Success %d."), 4 );
 }
 
 unsigned __stdcall
 MultiTest( void* params )
 {
-	std::auto_ptr<LogHandle> logFile  = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
 	int thread_num = *reinterpret_cast<int*>(params);
 
 	/* add a random sleep to allow the threads to stop at non-sequential timings */
 	Sleep( rand() % 1000 );
 
-	logFile->Write( EL_CRITICAL, TEXT("Multi Test Success %d."), thread_num );
+	LOG_CRIT( logFile, TEXT("Multi Test Success %d."), thread_num );
 
 	return 0;
 }
@@ -64,9 +64,9 @@ main( int argc, char* argv[] )
 {
 	int error = 0;
 
-	logFile = EventLog::InitialiseLog( TEXT("SimpleLog_Test.log") );
+	logFile = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
-	logFile->SetEventLevel( (EventLevel) EL_WARN );
+	SET_LEVEL( logFile, (EventLevel) EL_WARN );
 
 	makeLog1();
 	makeLog2();
@@ -88,7 +88,7 @@ main( int argc, char* argv[] )
 
 	WaitForMultipleObjects( MAX_THREADS, threads, true, INFINITE );
 
-	logFile->Write( EL_CRITICAL, TEXT("Logging Test Success.") );
+	LOG_CRIT( logFile, TEXT("Logging Test Success.") );
 
 	return error;
 }

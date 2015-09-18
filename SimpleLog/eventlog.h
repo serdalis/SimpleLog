@@ -41,11 +41,11 @@ typedef std::string TSTRING;
  */
 enum EventLevel
 {
-	EL_DEBUG    = 5,
-	EL_INFO     = 4,
-	EL_WARN     = 3,
-	EL_ERROR    = 2,
-	EL_CRITICAL = 1
+	EL_DEBUG = 5,
+	EL_INFO  = 4,
+	EL_WARN  = 3,
+	EL_ERROR = 2,
+	EL_CRIT  = 1
 };
 
 class LogHandle; /**< Forward delceration just for the header file */
@@ -265,5 +265,37 @@ public:
 		EventLog::CloseLog( eLog );
 	}
 };
+
+typedef std::auto_ptr<LogHandle> LOGHANDLE;
+
+#ifndef DISABLE_LOGGING_
+
+#define OPEN_LOG EventLog::InitialiseLog
+
+#define FLUSH( log ) log->FlushQueue();
+#define SET_MAX_QUEUE( log, max ) log->SetMaxQueue( max )
+#define SET_LEVEL( log, level ) log->SetEventLevel( level )
+
+#define LOG_CRIT( log, format, ... )  log->Write( EL_CRIT,  format, ##__VA_ARGS__ )
+#define LOG_ERROR( log, format, ... ) log->Write( EL_ERROR, format, ##__VA_ARGS__ )
+#define LOG_WARN( log, format, ... )  log->Write( EL_WARN,  format, ##__VA_ARGS__ )
+#define LOG_DEBUG( log, format, ... ) log->Write( EL_DEBUG, format, ##__VA_ARGS__ )
+#define LOG_INFO( log, format, ... )  log->Write( EL_INFO,  format, ##__VA_ARGS__ )
+
+#else
+
+#define OPEN_LOG(...) LOGHANDLE()
+
+#define FLUSH( log ) NULL
+#define SET_MAX_QUEUE( log, max ) NULL
+#define SET_LEVEL( log, level ) NULL
+
+#define LOG_CRIT( log, format, ... )  NULL
+#define LOG_ERROR( log, format, ... ) NULL
+#define LOG_WARN( log, format, ... )  NULL
+#define LOG_DEBUG( log, format, ... ) NULL
+#define LOG_INFO( log, format, ... )  NULL
+
+#endif
 
 #endif

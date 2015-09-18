@@ -233,12 +233,12 @@ EventLog::elToStr( EventLevel el )
 
 	switch( el )
 	{
-		case EL_DEBUG:    str = TEXT("DEBUG");    break;
-		case EL_INFO:     str = TEXT("INFO");     break;
-		case EL_WARN:     str = TEXT("WARN");     break;
-		case EL_ERROR:    str = TEXT("ERROR");    break;
-		case EL_CRITICAL: str = TEXT("CRITICAL"); break;
-		default:          str = TEXT("NONE");     break;
+		case EL_DEBUG:  str = TEXT("DEBUG");    break;
+		case EL_INFO:   str = TEXT("INFO");     break;
+		case EL_WARN:   str = TEXT("WARN");     break;
+		case EL_ERROR:  str = TEXT("ERROR");    break;
+		case EL_CRIT:   str = TEXT("CRITICAL"); break;
+		default:        str = TEXT("NONE");     break;
 	}
 
 	return TSTRING( str );
