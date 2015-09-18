@@ -1,20 +1,17 @@
-# SimpleLog
-Thread Safe Asynchronous Logging for C++ programs based on Windows.
-
 ## Usage
 To disable logging use the `DISABLE_LOGGING_` macro define.
 
 Include the `eventlog.h` file into all `.cpp` files you want to run the event log in.
 
-Call the EventLog initialisation function:
+Call the Open Log macro:
 
 ```C++
 OPEN_LOG(
-	const TSTRING filename,
-	const TSTRING path,
-	const EventLevel level,
-	const int wait,
-	const int maxqueue )
+	const TSTRING filename, /* file name of the log, with or without '.log' */
+	const TSTRING path,     /* relative path for the logging directory. */
+	const EventLevel level, /* level for message filtering. */
+	const int wait,         /* wait time for auto-flushing. */
+	const int maxqueue )    /* maximum message queue before flushing. */
 ```
 
 Store the result in a `LOGHANDLE` with the scope of your choosing.
