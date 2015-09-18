@@ -2,12 +2,14 @@
 Windows Multi-Thread Safe Lite Logging
 
 ## Usage
+To disable logging use the `DISABLE_LOGGING_` macro define.
+
 Include the `eventlog.h` file into all `.cpp` files you want to run the event log in.
 
 Call the EventLog initialisation function:
 
 ```C++
-EventLog::InitialiseLog(
+OPEN_LOG(
 	const TSTRING filename,
 	const TSTRING path,
 	const EventLevel level,
@@ -51,7 +53,7 @@ main( int argc, char* argv[] )
 unsigned __stdcall
 MultiTest( void* params )
 {
-	LOGHANDLE logFile  = OPEN_LOG( TEXT("SimpleLog_Test.log") );
+	LOGHANDLE logFile = OPEN_LOG( TEXT("SimpleLog_Test.log") );
 
 	int thread_num = *reinterpret_cast<int*>(params);
 
