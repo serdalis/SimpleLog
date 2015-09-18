@@ -74,6 +74,7 @@ protected:
 
 	TSTRING filePath; /**< path of the file to write to */
 	TSTRING fileName; /**< name of the file to write to */
+	TSTRING fileType; /**< file type if an extension was entered */
 
 	TSTRING fullFileName; /**< path, filename and index of the file to write to */
 
@@ -129,9 +130,9 @@ protected:
 	 * allows both "file.log" and "file" to be valid file names
 	 * @param filename name of the file to be sanitised.
 	 * @param fileTypeNeeded whether we want to return the filename with .log at the end or not.
-	 * @return filename with either .log added or stripped depending on fileTypeNeeded
+	 * @return filename with extnsion stripped
 	 */
-	static TSTRING SanitiseFileName( const TSTRING& filename, bool fileTypeNeeded = false );
+	static TSTRING RemoveExtension( const TSTRING& filename );
 
 public:
 

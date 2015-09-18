@@ -8,7 +8,7 @@
  
 std::map<TSTRING, EventLog*> EventLog::OpenLogs;
 
-std::auto_ptr<LogHandle>
+LOGHANDLE
 EventLog::InitialiseLog(
 	const TSTRING filename,
 	const TSTRING path,
@@ -16,7 +16,7 @@ EventLog::InitialiseLog(
 	const int wait,
 	const int maxqueue )
 {
-	TSTRING sanitised = SanitiseFileName( filename );
+	TSTRING sanitised = RemoveExtension( filename );
 
 	if( OpenLogs.count( sanitised ) )
 	{
@@ -24,35 +24,18 @@ EventLog::InitialiseLog(
 	}
 	else
 	{
-		OpenLogs[sanitised] = new EventLog( sanitised, path, level, wait );
+		OpenLogs[sanitised] = new EventLog( filename, path, level, wait );
 	}
 
-	return std::auto_ptr<LogHandle>( new LogHandle( OpenLogs[sanitised] ) );
+	return LOGHANDLE( new LogHandle( OpenLogs[sanitised] ) );
 }
 
 
 TSTRING
-EventLog::SanitiseFileName( const TSTRING& filename, bool fileTypeNeeded )
+EventLog::RemoveExtension( const TSTRING& filename )
 {
-	TSTRING newFilename = filename;
-	TSTRING::size_type ext;
-	ext = filename.rfind( '.' );
-
-	if( ext != TSTRING::npos )
-	{
-		if( filename.substr( ext ) == TEXT(".log") )
-		{
-			newFilename = filename.substr( 0, ext );
-		}
-		else if( fileTypeNeeded )
-		{
-			newFilename = filename + TEXT(".log");
-		}
-	}
-	else if( fileTypeNeeded )
-	{
-		newFilename = filename + TEXT(".log");
-	}
+	TSTRING::size_type ext = filename.rfind( '.' );
+	TSTRING newFilename = filename.substr( 0, ext );
 
 	return newFilename;
 }
@@ -98,6 +81,7 @@ EventLog::EventLog(
 	const int maxqueue )
 {
 	TCHAR exeLocation[MAX_PATH];
+	TSTRING::size_type ext;
 
 	references = 1;
 
@@ -111,7 +95,18 @@ EventLog::EventLog(
 	SetEventLevel( level );
 
 	filePath = path;
-	if(filePath.compare( TEXT("Log") ) == 0)
+
+	ext = filename.rfind( '.' );
+	if ( ext != TSTRING::npos )
+	{
+		fileType = filename.substr( ext );
+	}
+	else
+	{
+		fileType = TEXT(".log");
+	}
+
+	if( filePath.size() > 2 && filePath[1] != TEXT(':') )
 	{
 		HMODULE hm = NULL;
 
@@ -121,12 +116,13 @@ EventLog::EventLog(
 
 		GetModuleFileName( hm, exeLocation, MAX_PATH );
 		TCHAR* PathEnd = PathFindFileName( exeLocation );
-		*PathEnd = '\0';
+		*PathEnd = TEXT('\0');
 
-		filePath = TSTRING( exeLocation );
-		filePath.append( TEXT("Log\\") );
+		filePath = TSTRING( exeLocation ) + filePath + TEXT('\\');
 	}
+
 	fileName = filename;
+
 	CreateDirectory( filePath.c_str(), NULL );
 
 	requestedFlush = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -150,12 +146,12 @@ void
 EventLog::CheckNewDay()
 {
 	SYSTEMTIME cur_time = {0};
-	GetLocalTime(&cur_time);
+	GetLocalTime( &cur_time );
 
-	TCHAR dayChar = cur_time.wDayOfWeek + '0';
+	TCHAR dayChar = cur_time.wDayOfWeek + TEXT('0');
 
-	/* get the day number before '.log' and compare */
-	if( dayChar != fullFileName.at(fullFileName.rfind('.')-1) )
+	/* get the day number before the extention and compare */
+	if( dayChar != fullFileName.at( fullFileName.rfind( TEXT('.') )-1 ) )
 	{
 		ReopenFile();
 	}
@@ -171,10 +167,10 @@ EventLog::ReopenFile()
 	SYSTEMTIME cur_time = {0};
 	WIN32_FILE_ATTRIBUTE_DATA file_attr = {0};
 
-	GetLocalTime(&cur_time);
+	GetLocalTime( &cur_time );
 
-	TCHAR dayChar = cur_time.wDayOfWeek + '0';
-	fullFileName = filePath + TEXT("/") + fileName + TEXT("-") + dayChar + TEXT(".log");
+	TCHAR dayChar = cur_time.wDayOfWeek + TEXT('0');
+	fullFileName = filePath + TEXT('/') + RemoveExtension( fileName ) + TEXT('-') + dayChar + fileType;
 
 	EnterCriticalSection(&fileLock);
 
@@ -220,7 +216,7 @@ EventLog::ReopenFile()
 
 
 void
-EventLog::SetMaxQueue(const int maxqueue)
+EventLog::SetMaxQueue( const int maxqueue )
 {
 	maxQueue = maxqueue;
 }
@@ -268,9 +264,9 @@ EventLog::vWriteLog( const TCHAR* const format, const EventLevel level, va_list 
 	TSTRING messageLine( header );
 	messageLine += format;
 
-	if ( messageLine.back() != '\n' )
+	if ( messageLine.back() != TEXT('\n') )
 	{
-		messageLine += '\n';
+		messageLine += TEXT('\n');
 	}
 
 	lineLength = vsnprintf_t( NULL, 0, messageLine.c_str(), args );
@@ -334,7 +330,7 @@ EventLog::CloseLog( EventLog* eventLog, const bool force )
 void
 EventLog::CloseLog( const TSTRING filename, const bool force )
 {
-	TSTRING sanitised = SanitiseFileName( filename );
+	TSTRING sanitised = RemoveExtension( filename );
 	std::map< TSTRING, EventLog* >::iterator sit;
 
 	if ( OpenLogs.size() > 0 )
