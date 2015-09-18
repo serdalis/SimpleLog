@@ -1,5 +1,5 @@
 # SimpleLog
-Windows Multi-Thread Safe Lite Logging
+Thread Safe Asynchronous Logging for C++ programs based on Windows.
 
 ## Usage
 To disable logging use the `DISABLE_LOGGING_` macro define.
@@ -17,8 +17,8 @@ OPEN_LOG(
 	const int maxqueue )
 ```
 
-Store the result in an `auto_ptr<LogHandle>` with the scope of your choosing.
-When the auto_ptr goes out of scope the log file's internal reference count will decrease.
+Store the result in a `LOGHANDLE` with the scope of your choosing.
+When the `LOGHANDLE` goes out of scope the log file's internal reference count will decrease.
 If the internal reference count of the log file has reached 0 then the log will be flushed and closed.
 
 Write to the log exactly like `printf` except with a logging level at the front.
