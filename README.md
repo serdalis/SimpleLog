@@ -8,7 +8,7 @@ Call the Open Log macro:
 ```C++
 OPEN_LOG(
 	const TSTRING filename, /* file name of the log, with or without '.log' */
-	const TSTRING path,     /* relative path for the logging directory. */
+	const TSTRING path,     /* relative or absolute path for the logging directory. */
 	const EventLevel level, /* level for message filtering. */
 	const int wait,         /* wait time for auto-flushing. */
 	const int maxqueue )    /* maximum message queue before flushing. */

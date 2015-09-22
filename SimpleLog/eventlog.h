@@ -124,12 +124,11 @@ protected:
 	 * @param el event level enum value.
 	 * @return human readable string of event level.
 	 */
-	TSTRING elToStr( EventLevel el );
+	TSTRING elToStr( EventLevel el ) const;
 
 	/**
-	 * allows both "file.log" and "file" to be valid file names
+	 * Removes file extentions from the file name.
 	 * @param filename name of the file to be sanitised.
-	 * @param fileTypeNeeded whether we want to return the filename with .log at the end or not.
 	 * @return filename with extnsion stripped
 	 */
 	static TSTRING RemoveExtension( const TSTRING& filename );

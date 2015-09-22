@@ -3,9 +3,9 @@
 #include <cstdarg>
 #include <Shlwapi.h>
 
-
 #pragma comment( lib, "Shlwapi.lib" )
  
+
 std::map<TSTRING, EventLog*> EventLog::OpenLogs;
 
 LOGHANDLE
@@ -110,9 +110,9 @@ EventLog::EventLog(
 	{
 		HMODULE hm = NULL;
 
-		GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		GetModuleHandleEx( GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
 							TEXT("InitialiseLog"),
-							&hm);
+							&hm );
 
 		GetModuleFileName( hm, exeLocation, MAX_PATH );
 		TCHAR* PathEnd = PathFindFileName( exeLocation );
@@ -223,7 +223,7 @@ EventLog::SetMaxQueue( const int maxqueue )
 
 
 TSTRING
-EventLog::elToStr( EventLevel el )
+EventLog::elToStr( EventLevel el ) const
 {
 	TCHAR* str;
 
