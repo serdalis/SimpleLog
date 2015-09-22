@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="eventlog.h" />
+    <ClInclude Include="unicode_defines.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LICENSE" />

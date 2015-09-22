@@ -26,6 +26,9 @@
     <ClInclude Include="eventlog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="unicode_defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md">

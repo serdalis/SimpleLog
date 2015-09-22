@@ -20,19 +20,7 @@
 #include <Windows.h>
 #undef WIN32_LEAN_AND_MEAN
 
-#ifdef _UNICODE
-
-#define vsprintf_t  _vswprintf
-#define vsnprintf_t _vsnwprintf
-typedef std::wstring TSTRING;
-
-#else
-
-#define vsprintf_t  vsprintf
-#define vsnprintf_t vsnprintf
-typedef std::string TSTRING;
-
-#endif /* _UNICODE */
+#include "unicode_defines.h"
 
 
 /**
@@ -49,6 +37,7 @@ enum EventLevel
 };
 
 class LogHandle; /**< Forward delceration just for the header file */
+typedef std::auto_ptr<LogHandle> LOGHANDLE;
 
 /**
  * Multithread aware Event Reporting Class.
@@ -94,8 +83,8 @@ protected:
 	 * @param maxqueue max size of the message backlog.
 	 */
 	EventLog(
-		const TSTRING filename = TEXT("EventLog"),
-		const TSTRING path = TEXT("Log"),
+		const TSTRING& filename = TEXT("EventLog"),
+		const TSTRING& path = TEXT("Log"),
 		const EventLevel level = EL_WARN,
 		const int wait = 5000,
 		const int maxqueue = 20
@@ -143,9 +132,9 @@ public:
 	 * @param wait time to wait between flushes.
 	 * @param maxqueue max size of the message backlog.
 	 */
-	static std::auto_ptr<LogHandle> InitialiseLog(
-		const TSTRING filename = TEXT("EventLog"),
-		const TSTRING path = TEXT("Log"),
+	static LOGHANDLE InitialiseLog(
+		const TSTRING& filename = TEXT("EventLog"),
+		const TSTRING& path = TEXT("Log"),
 		const EventLevel level = EL_WARN,
 		const int wait = 5000,
 		const int maxqueue = 20
@@ -265,8 +254,6 @@ public:
 		EventLog::CloseLog( eLog );
 	}
 };
-
-typedef std::auto_ptr<LogHandle> LOGHANDLE;
 
 #ifndef DISABLE_LOGGING_
 

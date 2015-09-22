@@ -10,8 +10,8 @@ std::map<TSTRING, EventLog*> EventLog::OpenLogs;
 
 LOGHANDLE
 EventLog::InitialiseLog(
-	const TSTRING filename,
-	const TSTRING path,
+	const TSTRING& filename,
+	const TSTRING& path,
 	const EventLevel level,
 	const int wait,
 	const int maxqueue )
@@ -74,8 +74,8 @@ EventLog::TimerFlush(void* params, BOOLEAN TimerOrWaitFired)
 
 
 EventLog::EventLog(
-	const TSTRING filename,
-	const TSTRING path,
+	const TSTRING& filename,
+	const TSTRING& path,
 	const EventLevel level,
 	const int wait,
 	const int maxqueue )
