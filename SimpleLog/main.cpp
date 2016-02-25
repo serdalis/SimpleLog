@@ -90,5 +90,7 @@ main( int argc, char* argv[] )
 
 	LOG_CRIT( logFile, TEXT("Logging Test Success.") );
 
+	CLEANUP_LOGS();
+
 	return error;
 }

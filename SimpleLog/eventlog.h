@@ -269,9 +269,11 @@ public:
 #define LOG_DEBUG( log, format, ... ) log->Write( EL_DEBUG, format, ##__VA_ARGS__ )
 #define LOG_INFO( log, format, ... )  log->Write( EL_INFO,  format, ##__VA_ARGS__ )
 
+#define CLEANUP_LOGS() EventLog::FlushAll(); EventLog::CloseAll( true );
+
 #else
 
-#define OPEN_LOG(...) LOGHANDLE()
+#define OPEN_LOG(...) NULL
 
 #define FLUSH( log ) NULL
 #define SET_MAX_QUEUE( log, max ) NULL

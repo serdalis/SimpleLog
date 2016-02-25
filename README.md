@@ -1,3 +1,6 @@
+[![Coverage Status](https://coveralls.io/repos/serdalis/SimpleLog/badge.svg?branch=master&service=github)](https://coveralls.io/github/serdalis/SimpleLog?branch=master)
+---
+
 ## Usage
 To disable logging use the `DISABLE_LOGGING_` macro define.
 
