@@ -24,7 +24,7 @@ EventLog::InitialiseLog(
 	}
 	else
 	{
-		OpenLogs[sanitised] = new EventLog( filename, path, level, wait );
+		OpenLogs[sanitised] = new EventLog( filename, path, level, wait, maxqueue );
 	}
 
 	return LOGHANDLE( new LogHandle( OpenLogs[sanitised] ) );
@@ -51,19 +51,17 @@ EventLog::SetEventLevel(const EventLevel level)
 void
 EventLog::Write(const EventLevel level, const TCHAR* const format, ...)
 {
-	if(level <= eventLevel)
-	{
-		va_list args;
-		va_start( args, format );
-		vWriteLog( format, level, args );
-		va_end( args );
-	}
+	va_list args;
+	va_start( args, format );
+	vWriteLog( format, level, args );
+	va_end( args );
 }
 
 
 void CALLBACK
 EventLog::TimerFlush(void* params, BOOLEAN TimerOrWaitFired)
 {
+	UNREFERENCED_PARAMETER( TimerOrWaitFired );
 	EventLog* el = static_cast<EventLog*>( params );
 	
 	el->FlushQueue();
@@ -148,7 +146,7 @@ EventLog::CheckNewDay()
 	SYSTEMTIME cur_time = {0};
 	GetLocalTime( &cur_time );
 
-	TCHAR dayChar = cur_time.wDayOfWeek + TEXT('0');
+	TCHAR dayChar = (TCHAR)(cur_time.wDayOfWeek + TEXT('0'));
 
 	/* get the day number before the extention and compare */
 	if( dayChar != fullFileName.at( fullFileName.rfind( TEXT('.') )-1 ) )
@@ -169,7 +167,7 @@ EventLog::ReopenFile()
 
 	GetLocalTime( &cur_time );
 
-	TCHAR dayChar = cur_time.wDayOfWeek + TEXT('0');
+	TCHAR dayChar = (TCHAR)(cur_time.wDayOfWeek + TEXT('0'));
 	fullFileName = filePath + TEXT('/') + RemoveExtension( fileName ) + TEXT('-') + dayChar + fileType;
 
 	EnterCriticalSection(&fileLock);
@@ -229,12 +227,12 @@ EventLog::elToStr( EventLevel el ) const
 
 	switch( el )
 	{
-		case EL_DEBUG:  str = TEXT("DEBUG");    break;
-		case EL_INFO:   str = TEXT("INFO");     break;
-		case EL_WARN:   str = TEXT("WARN");     break;
-		case EL_ERROR:  str = TEXT("ERROR");    break;
-		case EL_CRIT:   str = TEXT("CRITICAL"); break;
-		default:        str = TEXT("NONE");     break;
+		case EL_DEBUG:  str = TEXT("DBUG"); break;
+		case EL_INFO:   str = TEXT("INFO"); break;
+		case EL_WARN:   str = TEXT("WARN"); break;
+		case EL_ERROR:  str = TEXT("ERRO"); break;
+		case EL_CRIT:   str = TEXT("CRIT"); break;
+		default:        str = TEXT("NONE"); break;
 	}
 
 	return TSTRING( str );
@@ -244,6 +242,8 @@ EventLog::elToStr( EventLevel el ) const
 void
 EventLog::vWriteLog( const TCHAR* const format, const EventLevel level, va_list args )
 {
+	if(level > eventLevel) return;
+
 	int lineLength;
 	std::vector<TCHAR> buf;
 
@@ -381,7 +381,7 @@ EventLog::CloseAll( const bool force )
 	/* we need to do this because CloseLog will invalidate sit when called */
 	for ( i = 0; i < filenames.size(); ++i )
 	{
-		CloseLog( filenames[i], true );
+		CloseLog( filenames[i], force );
 	}
 }
 

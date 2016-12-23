@@ -37,7 +37,7 @@ enum EventLevel
 };
 
 class LogHandle; /**< Forward delceration just for the header file */
-typedef std::auto_ptr<LogHandle> LOGHANDLE;
+typedef std::auto_ptr<LogHandle> LOGHANDLE; /**< Log handle will auto destroy out of context. */
 
 /**
  * Multithread aware Event Reporting Class.
@@ -219,39 +219,69 @@ public:
  */
 class LogHandle
 {
-	EventLog* eLog;
+	EventLog* eLog; /**< Pointer to the event log encapsulated in this log handle. */
 
 public:
+	/**
+	 * Constructor.
+	 * @param eventLog Event log pointer to encapsulate.
+	 */
 	LogHandle( EventLog* eventLog )
 		: eLog( eventLog ) {};
 
+	/**
+	 * Sets the max queue size of the encapsulated event log.
+	 * @param maxqueue Max Queue size to set.
+	 */
 	void SetMaxQueue( const int maxqueue )
 	{
+		if ( !eLog ) return;
 		eLog->SetMaxQueue( maxqueue );
 	}
 
+	/**
+	 * Sets the event level that the event log will log.
+	 * @param level Minimum level that the event log will log.
+	 */
 	void SetEventLevel( const EventLevel level )
 	{
+		if ( !eLog ) return;
 		eLog->SetEventLevel( level );
 	}
 
+	/**
+	 * Writes a log entry to the log file.
+	 * @param level Log Level of the entry.
+	 * @param format Format string of the log entry.
+	 * @... Variable arguments for the format string.
+	 */
 	void Write( const EventLevel level, const TCHAR* const format, ... )
 	{
+		if ( !eLog ) return;
 		va_list args;
 		va_start( args, format );
 		eLog->vWriteLog( format, level, args );
 		va_end( args );
-		
 	}
 
+	/**
+	 * Flushes the log file.
+	 */
 	void FlushQueue()
 	{
+		if ( !eLog ) return;
 		eLog->FlushQueue();
 	}
 
+	/**
+	 * Destructor flushes and deletes the log file.
+	 */
 	~LogHandle()
 	{
+		if ( !eLog ) return;
+		eLog->FlushQueue();
 		EventLog::CloseLog( eLog );
+		eLog = nullptr;
 	}
 };
 
@@ -269,7 +299,7 @@ public:
 #define LOG_DEBUG( log, format, ... ) log->Write( EL_DEBUG, format, ##__VA_ARGS__ )
 #define LOG_INFO( log, format, ... )  log->Write( EL_INFO,  format, ##__VA_ARGS__ )
 
-#define CLEANUP_LOGS() EventLog::FlushAll(); EventLog::CloseAll( true );
+#define CLEANUP_LOGS() EventLog::FlushAll();
 
 #else
 
