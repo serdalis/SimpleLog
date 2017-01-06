@@ -155,3 +155,6 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 /SimpleLog.VC.VC.opendb
+/SimpleLog.VC.db
+/makefile
+/.travis.yml
