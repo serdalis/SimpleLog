@@ -1,5 +1,12 @@
-[![Coverage Status](https://coveralls.io/repos/serdalis/SimpleLog/badge.svg?branch=master&service=github)](https://coveralls.io/github/serdalis/SimpleLog?branch=master)
+[![Build Status](https://travis-ci.org/serdalis/SimpleLog.svg?branch=master)](https://travis-ci.org/serdalis/SimpleLog) [![Coverage Status](https://coveralls.io/repos/github/serdalis/SimpleLog/badge.svg?branch=master)](https://coveralls.io/github/serdalis/SimpleLog?branch=master)
 ---
+
+## Preamble
+Designed as a lite high performance multithreaded logging system for my own usage when creating programs.
+This project will mature as it is used in a wider veriaty of program designs and architectures.
+
+For now this project is only for use in windows based OS's ( XP SP3 + ) and visual studio ( 2010 + ).
+Linux integration is incoming.
 
 ## Usage
 To disable logging use the `DISABLE_LOGGING_` macro define.
@@ -86,6 +93,3 @@ main( int argc, char* argv[] )
 	return 0;
 }
 ```
-
-## TODO
-Tests!
