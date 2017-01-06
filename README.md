@@ -1,5 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/github/serdalis/SimpleLog/badge.svg?branch=master)](https://coveralls.io/github/serdalis/SimpleLog?branch=master)
-[![Build Status](https://travis-ci.org/serdalis/SimpleLog.svg?branch=master)](https://travis-ci.org/serdalis/SimpleLog)
+[![Build Status](https://travis-ci.org/serdalis/SimpleLog.svg?branch=master)](https://travis-ci.org/serdalis/SimpleLog) [![Coverage Status](https://coveralls.io/repos/github/serdalis/SimpleLog/badge.svg?branch=master)](https://coveralls.io/github/serdalis/SimpleLog?branch=master)
 ---
 
 ## Preamble
