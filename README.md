@@ -8,7 +8,6 @@ This project will mature as it is used in a wider veriaty of program designs and
 
 For now this project is only for use in windows based OS's ( XP SP3 + ) and visual studio ( 2010 + ).
 Linux integration is incoming.
----
 
 ## Usage
 To disable logging use the `DISABLE_LOGGING_` macro define.

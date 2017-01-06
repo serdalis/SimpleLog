@@ -1,0 +1,8 @@
+language: cpp
+compiler: gcc
+os: windows
+branches:
+  only:
+  - master
+  - Beta
+  - Development
