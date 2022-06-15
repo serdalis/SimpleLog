@@ -76,9 +76,11 @@ main( int argc, char* argv[] )
 
 	int i = 0;
 
+	// Lets make some threads to test the logging.
 	HANDLE threads[MAX_THREADS];
 	int thread_nums[MAX_THREADS];
 
+	// Start the threads and tell them to execute the logs.
 	for ( i = 0; i < MAX_THREADS; ++i )
 	{
 		thread_nums[i] = i;
@@ -86,6 +88,7 @@ main( int argc, char* argv[] )
 					_beginthreadex(NULL, 0U, MultiTest, &thread_nums[i], 0U, NULL));
 	}
 
+	// Wait for all the threads to finish logging.
 	WaitForMultipleObjects( MAX_THREADS, threads, true, INFINITE );
 
 	LOG_CRIT( logFile, TEXT("Logging Test Success.") );
